@@ -3,7 +3,7 @@
 import React, { PropsWithChildren, useActionState, useEffect, HTMLAttributes, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { defaultFormActionState, type FormAction, type FormActionState } from './actions';
+import { defaultFormActionState, type FormAction, type FormActionState } from '@/actions';
 
 export function useFormAction(formAction: FormAction) {
   const router = useRouter();
