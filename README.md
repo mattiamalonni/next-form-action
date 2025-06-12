@@ -235,6 +235,69 @@ export const deleteItemAction = createFormAction(
 - React 19+
 - TypeScript 5+
 
+## Development
+
+This project includes several utility scripts to help with development and publishing:
+
+### Publishing CLI
+
+```bash
+# Unified publishing CLI (recommended)
+pnpm run publish
+```
+
+### Development Scripts
+
+```bash
+# Run all quality checks
+pnpm run check
+
+# Build the package
+pnpm run build
+
+# Run tests
+pnpm test
+
+# Type check
+pnpm run type-check
+
+# Lint and format
+pnpm run lint
+pnpm run format
+```
+
+### Publishing Workflow
+
+Use the unified CLI for all publishing needs:
+
+```bash
+# Run the unified publishing CLI
+pnpm run publish
+```
+
+The CLI provides multiple options:
+
+1. **🚀 Complete Publishing Workflow (Recommended)**
+   - Validates package readiness
+   - Optionally bumps version
+   - Publishes to npm
+   - All in one seamless flow
+
+2. **Individual Actions**
+   - 🔍 Validate Package
+   - 📦 Bump Version
+   - 📤 Publish to NPM
+
+Features include:
+
+- Interactive version management (patch/minor/major/custom)
+- Comprehensive pre-publish validation and safety checks
+- Quality checks with progress indicators (lint, format, test, type-check)
+- Dry-run before actual publishing
+- Git integration (commit, tag, push)
+- NPM version conflict detection
+- Beautiful CLI interface with colors and spinners
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
