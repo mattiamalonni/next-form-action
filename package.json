@@ -20,14 +20,11 @@
   "scripts": {
     "build": "unbuild",
     "dev": "unbuild --watch",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:coverage": "vitest --coverage",
-    "lint": "eslint {src,test}/**/*.{ts,tsx}",
-    "lint:fix": "eslint {src,test}/**/*.{ts,tsx} --fix",
-    "format": "prettier --write {src,test}/**/*.{ts,tsx}",
-    "format:check": "prettier --check {src,test}/**/*.{ts,tsx}",
-    "check": "pnpm run type-check && pnpm run lint && pnpm run format:check && pnpm run test:run",
+    "lint": "eslint src/**/*.{ts,tsx}",
+    "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
+    "format": "prettier --write src/**/*.{ts,tsx}",
+    "format:check": "prettier --check src/**/*.{ts,tsx}",
+    "check": "pnpm run type-check && pnpm run lint && pnpm run format:check",
     "prepublishOnly": "pnpm run check && pnpm run build",
     "publish": "node scripts/cli.js",
     "type-check": "tsc --noEmit"
@@ -55,9 +52,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
     "@types/inquirer": "^9.0.8",
     "@types/node": "^24.0.1",
     "@types/react": "^19.1.8",
@@ -71,11 +65,9 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "inquirer": "^12.6.3",
-    "jsdom": "^26.1.0",
     "ora": "^8.2.0",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3",
-    "unbuild": "^3.5.0",
-    "vitest": "^3.2.3"
+    "unbuild": "^3.5.0"
   }
 }

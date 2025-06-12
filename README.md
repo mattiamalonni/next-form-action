@@ -278,6 +278,7 @@ pnpm run publish
 The CLI provides multiple options:
 
 1. **🚀 Complete Publishing Workflow (Recommended)**
+
    - Validates package readiness
    - Optionally bumps version
    - Publishes to npm

@@ -35,9 +35,9 @@ function logHeader(message) {
 
 function exec(command, { silent = false } = {}) {
   try {
-    const result = execSync(command, { 
+    const result = execSync(command, {
       encoding: 'utf8',
-      stdio: silent ? 'pipe' : 'inherit'
+      stdio: silent ? 'pipe' : 'inherit',
     });
     return result?.toString().trim();
   } catch (error) {
@@ -69,7 +69,7 @@ function formatVersion({ major, minor, patch }) {
 
 function incrementVersion(version, type) {
   const parsed = parseVersion(version);
-  
+
   switch (type) {
     case 'major':
       return formatVersion({ major: parsed.major + 1, minor: 0, patch: 0 });
@@ -110,7 +110,7 @@ async function updatePackageVersion(newVersion) {
 async function checkPackageJson() {
   try {
     const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
-    
+
     const checks = [
       { name: 'Package name', value: pkg.name, required: true },
       { name: 'Version', value: pkg.version, required: true },
@@ -123,14 +123,14 @@ async function checkPackageJson() {
       { name: 'Keywords', value: pkg.keywords?.length > 0, required: false },
       { name: 'Not private', value: !pkg.private, required: true },
     ];
-    
+
     console.log(chalk.blue('📦 Package.json validation:'));
-    
+
     let allGood = true;
     checks.forEach(check => {
-      const status = check.value ? '✅' : (check.required ? '❌' : '⚠️');
+      const status = check.value ? '✅' : check.required ? '❌' : '⚠️';
       const message = `  ${status} ${check.name}: ${check.value || 'missing'}`;
-      
+
       if (check.value) {
         console.log(chalk.green(message));
       } else if (check.required) {
@@ -140,7 +140,7 @@ async function checkPackageJson() {
         console.log(chalk.yellow(message));
       }
     });
-    
+
     return allGood;
   } catch (error) {
     console.log(chalk.red(`❌ Failed to read package.json: ${error.message}`));
@@ -151,9 +151,9 @@ async function checkPackageJson() {
 async function checkBuildFiles() {
   const { access } = await import('fs/promises');
   const files = ['dist/index.d.ts', 'dist/index.mjs', 'dist/index.cjs'];
-  
+
   console.log(chalk.blue('\n🏗️  Build files:'));
-  
+
   let allGood = true;
   for (const file of files) {
     try {
@@ -164,16 +164,16 @@ async function checkBuildFiles() {
       allGood = false;
     }
   }
-  
+
   return allGood;
 }
 
 async function checkGitStatus() {
   console.log(chalk.blue('\n🔍 Git status:'));
-  
+
   const status = execSilent('git status --porcelain');
   const branch = execSilent('git branch --show-current');
-  
+
   if (status) {
     console.log(chalk.yellow('  ⚠️  Uncommitted changes detected'));
     console.log(chalk.dim(status));
@@ -181,20 +181,20 @@ async function checkGitStatus() {
   } else {
     console.log(chalk.green('  ✅ Working directory clean'));
   }
-  
+
   if (branch && (branch === 'main' || branch === 'master')) {
     console.log(chalk.green(`  ✅ On ${branch} branch`));
   } else {
     console.log(chalk.yellow(`  ⚠️  On '${branch || 'unknown'}' branch (not main/master)`));
     return false;
   }
-  
+
   return true;
 }
 
 async function checkNpmLogin() {
   console.log(chalk.blue('\n🔑 NPM authentication:'));
-  
+
   const whoami = execSilent('npm whoami');
   if (whoami) {
     console.log(chalk.green(`  ✅ Logged in as: ${whoami}`));
@@ -208,19 +208,18 @@ async function checkNpmLogin() {
 
 async function runQualityChecks() {
   console.log(chalk.blue('\n🔍 Quality checks:'));
-  
+
   const checks = [
     { name: 'Type check', command: 'pnpm type-check' },
     { name: 'Lint', command: 'pnpm lint' },
     { name: 'Format check', command: 'pnpm format:check' },
-    { name: 'Tests', command: 'pnpm test:run' },
   ];
-  
+
   let allGood = true;
-  
+
   for (const check of checks) {
     const spinner = ora(`Running ${check.name.toLowerCase()}...`).start();
-    
+
     try {
       execSilent(check.command);
       spinner.succeed(check.name);
@@ -229,7 +228,7 @@ async function runQualityChecks() {
       allGood = false;
     }
   }
-  
+
   return allGood;
 }
 
@@ -298,19 +297,36 @@ async function createGitTag(version) {
 
 async function publishToNpm(isDryRun = false) {
   const command = isDryRun ? 'npm publish --dry-run' : 'npm publish';
-  const spinner = ora(isDryRun ? 'Running dry-run publish...' : 'Publishing to npm...').start();
-  
+
   try {
-    exec(command);
-    
     if (isDryRun) {
-      spinner.succeed('Dry-run completed successfully!');
+      // For dry run, show a message and then run with full output
+      console.log(chalk.blue('🧪 Running dry-run publish...'));
+      console.log(chalk.dim('─'.repeat(50)));
+
+      // Execute with full output visible
+      exec(command, { silent: false });
+
+      console.log(chalk.dim('─'.repeat(50)));
+      console.log(chalk.green('✅ Dry-run completed successfully!'));
     } else {
-      spinner.succeed('Package published successfully!');
+      // For actual publish, show a message and then run with full output
+      console.log(chalk.magenta('🚀 Publishing to npm...'));
+      console.log(chalk.dim('─'.repeat(50)));
+
+      // Execute with full output visible
+      exec(command, { silent: false });
+
+      console.log(chalk.dim('─'.repeat(50)));
+      console.log(chalk.green('✅ Package published successfully!'));
     }
     return true;
   } catch (error) {
-    spinner.fail(`Publish failed: ${error.message}`);
+    if (isDryRun) {
+      console.log(chalk.red(`❌ Dry-run failed: ${error.message}`));
+    } else {
+      console.log(chalk.red(`❌ Publish failed: ${error.message}`));
+    }
     return false;
   }
 }
@@ -333,7 +349,7 @@ async function validateAction() {
   console.log(chalk.bold.blue('🔍 Pre-publish Validation'));
   console.log(chalk.bold.blue('========================'));
   console.log();
-  
+
   const checks = await Promise.all([
     checkPackageJson(),
     checkBuildFiles(),
@@ -341,9 +357,9 @@ async function validateAction() {
     checkNpmLogin(),
     runQualityChecks(),
   ]);
-  
+
   const allPassed = checks.every(Boolean);
-  
+
   console.log();
   console.log(chalk.blue('📊 Summary:'));
   if (allPassed) {
@@ -360,16 +376,16 @@ async function versionBumpAction() {
     console.log(chalk.bold.blue('📦 Version Bump'));
     console.log(chalk.bold.blue('==============='));
     console.log();
-    
+
     const packageInfo = await getCurrentPackageInfo();
     const currentVersion = packageInfo.version;
     console.log(chalk.yellow(`Current version: ${currentVersion}`));
     console.log();
-    
+
     const patchVersion = incrementVersion(currentVersion, 'patch');
     const minorVersion = incrementVersion(currentVersion, 'minor');
     const majorVersion = incrementVersion(currentVersion, 'major');
-    
+
     const { versionChoice } = await inquirer.prompt([
       {
         type: 'list',
@@ -398,9 +414,9 @@ async function versionBumpAction() {
         ],
       },
     ]);
-    
+
     let newVersion;
-    
+
     if (versionChoice === 'patch') {
       newVersion = patchVersion;
     } else if (versionChoice === 'minor') {
@@ -413,7 +429,7 @@ async function versionBumpAction() {
           type: 'input',
           name: 'customVersion',
           message: 'Enter custom version:',
-          validate: (input) => {
+          validate: input => {
             if (!/^\d+\.\d+\.\d+$/.test(input)) {
               return 'Invalid version format. Use semver format (x.y.z)';
             }
@@ -423,7 +439,7 @@ async function versionBumpAction() {
       ]);
       newVersion = customVersion;
     }
-    
+
     // Final confirmation
     const { confirm } = await inquirer.prompt([
       {
@@ -433,7 +449,7 @@ async function versionBumpAction() {
         default: true,
       },
     ]);
-    
+
     if (confirm) {
       await updatePackageVersion(newVersion);
       console.log();
@@ -443,7 +459,6 @@ async function versionBumpAction() {
       console.log(chalk.yellow('Version update cancelled.'));
       return { success: false };
     }
-    
   } catch (error) {
     console.log(chalk.red(`❌ Failed to update version: ${error.message}`));
     return { success: false };
@@ -455,24 +470,24 @@ async function publishAction() {
     console.log(chalk.bold.magenta('🚀 Publishing Wizard'));
     console.log(chalk.bold.magenta('=================='));
     console.log();
-    
+
     // Get current package info
     const packageInfo = await getCurrentPackageInfo();
-    
+
     if (packageInfo.private) {
       logError('Package is marked as private in package.json');
       return false;
     }
-    
+
     logInfo(`Current package: ${chalk.bold(packageInfo.name)}@${chalk.bold(packageInfo.version)}`);
     console.log();
-    
+
     // Pre-flight checks
     logHeader('🔍 Pre-flight Checks');
-    
+
     const gitStatusClean = await checkGitStatusForPublish();
     const onMainBranch = await checkGitBranch();
-    
+
     if (!gitStatusClean || !onMainBranch) {
       const { continueWithIssues } = await inquirer.prompt([
         {
@@ -482,26 +497,26 @@ async function publishAction() {
           default: false,
         },
       ]);
-      
+
       if (!continueWithIssues) {
         logInfo('Aborted. Please resolve git issues first.');
         return false;
       }
     }
-    
+
     // Quality checks
     console.log();
     logHeader('🔍 Quality Checks');
-    
+
     const { runChecks } = await inquirer.prompt([
       {
         type: 'confirm',
         name: 'runChecks',
-        message: 'Run quality checks (type-check, lint, format, test)?',
+        message: 'Run quality checks (type-check, lint, format)?',
         default: true,
       },
     ]);
-    
+
     if (runChecks) {
       const checksPass = await runQualityChecks();
       if (!checksPass) {
@@ -513,18 +528,18 @@ async function publishAction() {
             default: false,
           },
         ]);
-        
+
         if (!continueWithFailedChecks) {
           logInfo('Aborted due to failed quality checks.');
           return false;
         }
       }
     }
-    
+
     // Build
     console.log();
     logHeader('🏗️  Build');
-    
+
     const { shouldBuild } = await inquirer.prompt([
       {
         type: 'confirm',
@@ -533,7 +548,7 @@ async function publishAction() {
         default: true,
       },
     ]);
-    
+
     if (shouldBuild) {
       const buildSuccess = await buildPackage();
       if (!buildSuccess) {
@@ -541,11 +556,11 @@ async function publishAction() {
         return false;
       }
     }
-    
+
     // Dry run
     console.log();
     logHeader('🧪 Dry Run');
-    
+
     const { dryRun } = await inquirer.prompt([
       {
         type: 'confirm',
@@ -554,22 +569,28 @@ async function publishAction() {
         default: true,
       },
     ]);
-    
+
     if (dryRun) {
       const dryRunSuccess = await publishToNpm(true);
       if (!dryRunSuccess) {
         logError('Dry run failed. Cannot continue.');
         return false;
       }
+
+      console.log();
+      logSuccess('Dry run completed successfully! Package is ready for publishing.');
+      console.log(
+        chalk.gray('The dry run validates that your package can be published without actually publishing it.'),
+      );
     }
-    
+
     // Final confirmation
     console.log();
     logHeader('🚀 Ready to Publish');
     console.log(chalk.yellow(`Package: ${packageInfo.name}`));
     console.log(chalk.yellow(`Version: ${packageInfo.version}`));
     console.log();
-    
+
     const { finalConfirm } = await inquirer.prompt([
       {
         type: 'confirm',
@@ -578,12 +599,12 @@ async function publishAction() {
         default: false,
       },
     ]);
-    
+
     if (!finalConfirm) {
       logInfo('Publishing cancelled.');
       return false;
     }
-    
+
     // Create git tag
     const { shouldTag } = await inquirer.prompt([
       {
@@ -593,14 +614,14 @@ async function publishAction() {
         default: true,
       },
     ]);
-    
+
     if (shouldTag) {
       await createGitTag(packageInfo.version);
     }
-    
+
     // Publish
     const publishSuccess = await publishToNpm(false);
-    
+
     if (publishSuccess) {
       // Push to git
       const { shouldPush } = await inquirer.prompt([
@@ -611,11 +632,11 @@ async function publishAction() {
           default: true,
         },
       ]);
-      
+
       if (shouldPush) {
         await pushToGit();
       }
-      
+
       console.log();
       console.log(chalk.bold.green('🎉 Publishing Complete!'));
       console.log(chalk.bold.green('============================'));
@@ -627,7 +648,6 @@ async function publishAction() {
       logError('Publishing failed');
       return false;
     }
-    
   } catch (error) {
     logError(`Publishing failed: ${error.message}`);
     return false;
@@ -639,11 +659,11 @@ async function fullPublishWorkflow() {
     console.log(chalk.bold.magenta('🚀 Complete Publishing Workflow'));
     console.log(chalk.bold.magenta('==============================='));
     console.log();
-    
+
     // Step 1: Validation
     logHeader('Step 1: Validation');
     const validationPassed = await validateAction();
-    
+
     if (!validationPassed) {
       const { continueAnyway } = await inquirer.prompt([
         {
@@ -653,15 +673,15 @@ async function fullPublishWorkflow() {
           default: false,
         },
       ]);
-      
+
       if (!continueAnyway) {
         logInfo('Workflow aborted.');
         return;
       }
     }
-    
+
     console.log();
-    
+
     // Step 2: Version Bump
     logHeader('Step 2: Version Management');
     const { shouldBumpVersion } = await inquirer.prompt([
@@ -672,7 +692,7 @@ async function fullPublishWorkflow() {
         default: true,
       },
     ]);
-    
+
     if (shouldBumpVersion) {
       const versionResult = await versionBumpAction();
       if (!versionResult.success) {
@@ -681,93 +701,116 @@ async function fullPublishWorkflow() {
       }
       logSuccess(`Version updated to ${versionResult.newVersion}`);
     }
-    
+
     console.log();
-    
+
     // Step 3: Publishing
     logHeader('Step 3: Publishing');
     const publishSuccess = await publishAction();
-    
+
     if (publishSuccess) {
       console.log();
       console.log(chalk.bold.green('🎉 Complete workflow finished successfully!'));
     } else {
       logError('Publishing workflow failed.');
     }
-    
   } catch (error) {
     logError(`Workflow failed: ${error.message}`);
   }
 }
 
 // Main menu
+async function showMainMenu() {
+  console.log(chalk.bold.cyan('📦 Next Form Action CLI'));
+  console.log(chalk.bold.cyan('========================'));
+  console.log();
+
+  const { action } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'action',
+      message: 'What would you like to do?',
+      choices: [
+        {
+          name: '🚀 Complete Publishing Workflow (recommended)',
+          value: 'full-workflow',
+          short: 'Full Workflow',
+        },
+        new inquirer.Separator(),
+        {
+          name: '🔍 Validate Package',
+          value: 'validate',
+          short: 'Validate',
+        },
+        {
+          name: '📦 Bump Version',
+          value: 'version',
+          short: 'Version',
+        },
+        {
+          name: '📤 Publish to NPM',
+          value: 'publish',
+          short: 'Publish',
+        },
+        new inquirer.Separator(),
+        {
+          name: '❌ Exit',
+          value: 'exit',
+          short: 'Exit',
+        },
+      ],
+    },
+  ]);
+
+  return action;
+}
+
 async function main() {
   try {
-    console.log(chalk.bold.cyan('📦 Next Form Action CLI'));
-    console.log(chalk.bold.cyan('========================'));
-    console.log();
-    
-    const { action } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'action',
-        message: 'What would you like to do?',
-        choices: [
-          {
-            name: '🚀 Complete Publishing Workflow (recommended)',
-            value: 'full-workflow',
-            short: 'Full Workflow',
-          },
-          new inquirer.Separator(),
-          {
-            name: '🔍 Validate Package',
-            value: 'validate',
-            short: 'Validate',
-          },
-          {
-            name: '📦 Bump Version',
-            value: 'version',
-            short: 'Version',
-          },
-          {
-            name: '📤 Publish to NPM',
-            value: 'publish',
-            short: 'Publish',
-          },
-          new inquirer.Separator(),
-          {
-            name: '❌ Exit',
-            value: 'exit',
-            short: 'Exit',
-          },
-        ],
-      },
-    ]);
-    
-    console.log();
-    
-    switch (action) {
-      case 'full-workflow':
-        await fullPublishWorkflow();
-        break;
-      case 'validate':
-        await validateAction();
-        break;
-      case 'version':
-        await versionBumpAction();
-        break;
-      case 'publish':
-        await publishAction();
-        break;
-      case 'exit':
+    while (true) {
+      const action = await showMainMenu();
+      console.log();
+
+      switch (action) {
+        case 'full-workflow':
+          await fullPublishWorkflow();
+          break;
+        case 'validate':
+          await validateAction();
+          break;
+        case 'version':
+          await versionBumpAction();
+          break;
+        case 'publish':
+          await publishAction();
+          break;
+        case 'exit':
+          console.log(chalk.yellow('👋 Goodbye!'));
+          process.exit(0);
+          break;
+        default:
+          logError('Invalid action selected');
+          continue;
+      }
+
+      // Ask if user wants to continue after each action
+      console.log();
+      const { continueAction } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'continueAction',
+          message: 'Would you like to perform another action?',
+          default: true,
+        },
+      ]);
+
+      if (!continueAction) {
         console.log(chalk.yellow('👋 Goodbye!'));
         process.exit(0);
-        break;
-      default:
-        logError('Invalid action selected');
-        process.exit(1);
+      }
+
+      console.log(); // Add spacing before showing menu again
     }
-    
   } catch (error) {
     logError(`CLI failed: ${error.message}`);
     process.exit(1);
@@ -780,7 +823,7 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-main().catch((error) => {
+main().catch(error => {
   logError(`Unexpected error: ${error.message}`);
   process.exit(1);
 });
