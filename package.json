@@ -1,6 +1,6 @@
 {
   "name": "next-form-action",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A TypeScript library for handling form actions in Next.js applications",
   "type": "module",
   "main": "dist/index.cjs",
@@ -19,15 +19,13 @@
   ],
   "scripts": {
     "build": "unbuild",
-    "dev": "unbuild --watch",
+    "type-check": "tsc --noEmit",
     "lint": "eslint src/**/*.{ts,tsx}",
     "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
     "format": "prettier --write src/**/*.{ts,tsx}",
     "format:check": "prettier --check src/**/*.{ts,tsx}",
     "check": "pnpm run type-check && pnpm run lint && pnpm run format:check",
-    "prepublishOnly": "pnpm run check && pnpm run build",
-    "publish": "node scripts/cli.js",
-    "type-check": "tsc --noEmit"
+    "prepublishOnly": "pnpm run check && pnpm run build"
   },
   "keywords": [
     "nextjs",
@@ -52,20 +50,16 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
-    "@types/inquirer": "^9.0.8",
     "@types/node": "^24.0.1",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
     "@typescript-eslint/parser": "^8.34.0",
-    "chalk": "^5.4.1",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.4.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "inquirer": "^12.6.3",
-    "ora": "^8.2.0",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3",
     "unbuild": "^3.5.0"

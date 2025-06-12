@@ -255,9 +255,6 @@ pnpm run check
 # Build the package
 pnpm run build
 
-# Run tests
-pnpm test
-
 # Type check
 pnpm run type-check
 
@@ -293,7 +290,7 @@ Features include:
 
 - Interactive version management (patch/minor/major/custom)
 - Comprehensive pre-publish validation and safety checks
-- Quality checks with progress indicators (lint, format, test, type-check)
+- Quality checks with progress indicators (lint, format, type-check)
 - Dry-run before actual publishing
 - Git integration (commit, tag, push)
 - NPM version conflict detection
