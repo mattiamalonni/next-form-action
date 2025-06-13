@@ -29,24 +29,24 @@ pnpm add next-form-action
 ```typescript
 import { createFormAction } from 'next-form-action';
 
-export const loginAction = createFormAction('login', async (state, formData, formActionError, formActionSuccess) => {
+export const loginAction = createFormAction('login', async (state, formData, error, success) => {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
   // Validate input
   if (!email || !password) {
-    formActionError('Email and password are required');
+    error('Email and password are required');
   }
 
   try {
     // Your authentication logic here
     const user = await authenticate(email, password);
 
-    formActionSuccess('Login successful!', {
+    success('Login successful!', {
       redirect: '/dashboard',
     });
   } catch (error) {
-    formActionError('Invalid credentials');
+    error('Invalid credentials');
   }
 });
 ```
@@ -101,8 +101,8 @@ Creates a form action with built-in error handling and state management.
 
 - `state` (FormActionState): Current form state
 - `formData` (FormData): Form data from submission
-- `formActionError` (function): Function to throw an error response
-- `formActionSuccess` (function): Function to throw a success response
+- `error` (function): Function to throw an error response
+- `success` (function): Function to throw a success response
 
 ### `useFormAction(formAction)`
 
@@ -172,7 +172,7 @@ export default function AdvancedForm() {
 ```typescript
 import { createFormAction } from 'next-form-action';
 
-export const signupAction = createFormAction('signup', async (state, formData, formActionError, formActionSuccess) => {
+export const signupAction = createFormAction('signup', async (state, formData, error, success) => {
   const formErrors: Record<string, string[]> = {};
 
   const email = formData.get('email') as string;
@@ -191,11 +191,11 @@ export const signupAction = createFormAction('signup', async (state, formData, f
   }
 
   if (Object.keys(formErrors).length > 0) {
-    formActionError('Please fix the errors below', { formErrors });
+    error('Please fix the errors below', { formErrors });
   }
 
   // Process signup...
-  formActionSuccess('Account created successfully!', {
+  success('Account created successfully!', {
     redirect: '/welcome',
   });
 });
@@ -206,27 +206,21 @@ export const signupAction = createFormAction('signup', async (state, formData, f
 ```typescript
 import { createFormAction } from 'next-form-action';
 
-export const updateProfileAction = createFormAction(
-  'updateProfile',
-  async (state, formData, formActionError, formActionSuccess) => {
-    // Update logic...
+export const updateProfileAction = createFormAction('updateProfile', async (state, formData, error, success) => {
+  // Update logic...
 
-    formActionSuccess('Profile updated!', {
-      refresh: true, // Refresh the current page
-    });
-  },
-);
+  success('Profile updated!', {
+    refresh: true, // Refresh the current page
+  });
+});
 
-export const deleteItemAction = createFormAction(
-  'deleteItem',
-  async (state, formData, formActionError, formActionSuccess) => {
-    // Delete logic...
+export const deleteItemAction = createFormAction('deleteItem', async (state, formData, error, success) => {
+  // Delete logic...
 
-    formActionSuccess('Item deleted!', {
-      redirect: '/items', // Redirect to items list
-    });
-  },
-);
+  success('Item deleted!', {
+    redirect: '/items', // Redirect to items list
+  });
+});
 ```
 
 ## Requirements
@@ -238,13 +232,6 @@ export const deleteItemAction = createFormAction(
 ## Development
 
 This project includes several utility scripts to help with development and publishing:
-
-### Publishing CLI
-
-```bash
-# Unified publishing CLI (recommended)
-pnpm run publish
-```
 
 ### Development Scripts
 
@@ -260,41 +247,9 @@ pnpm run type-check
 
 # Lint and format
 pnpm run lint
-pnpm run format
+pnpm run lint:fix
+pnpm run format:check
 ```
-
-### Publishing Workflow
-
-Use the unified CLI for all publishing needs:
-
-```bash
-# Run the unified publishing CLI
-pnpm run publish
-```
-
-The CLI provides multiple options:
-
-1. **🚀 Complete Publishing Workflow (Recommended)**
-
-   - Validates package readiness
-   - Optionally bumps version
-   - Publishes to npm
-   - All in one seamless flow
-
-2. **Individual Actions**
-   - 🔍 Validate Package
-   - 📦 Bump Version
-   - 📤 Publish to NPM
-
-Features include:
-
-- Interactive version management (patch/minor/major/custom)
-- Comprehensive pre-publish validation and safety checks
-- Quality checks with progress indicators (lint, format, type-check)
-- Dry-run before actual publishing
-- Git integration (commit, tag, push)
-- NPM version conflict detection
-- Beautiful CLI interface with colors and spinners
 
 ## Contributing
 

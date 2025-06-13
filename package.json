@@ -1,19 +1,11 @@
 {
   "name": "next-form-action",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A TypeScript library for handling form actions in Next.js applications",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "sideEffects": false,
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    }
-  },
   "files": [
     "dist",
     "README.md"
@@ -33,7 +25,10 @@
     "react",
     "forms",
     "typescript",
-    "form-actions"
+    "form-actions",
+    "useActionState",
+    "server-actions",
+    "react-hooks"
   ],
   "author": "Mattia Malonni",
   "license": "MIT",

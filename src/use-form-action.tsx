@@ -3,11 +3,12 @@
 import React, { PropsWithChildren, useActionState, useEffect, HTMLAttributes, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { defaultFormActionState, type FormAction, type FormActionState } from '@/actions';
+import { createFormActionState } from '@/actions';
+import { FormAction, FormActionState } from '@/types/actions';
 
-export function useFormAction(formAction: FormAction) {
+export const useFormAction = (formAction: FormAction) => {
   const router = useRouter();
-  const [state, dispatch, isPending] = useActionState(formAction, defaultFormActionState);
+  const [state, dispatch, isPending] = useActionState(formAction, createFormActionState());
 
   // Store callbacks using refs to avoid stale closures
   const successCallbacks = useRef<Array<(state: FormActionState) => void | Promise<void>>>([]);
@@ -61,4 +62,4 @@ export function useFormAction(formAction: FormAction) {
     onFormSuccess,
     onFormError,
   };
-}
+};
