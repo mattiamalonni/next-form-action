@@ -34,8 +34,12 @@ export const useFormAction = (formAction: FormAction) => {
     return state.message ? <div {...props}>{state.message}</div> : null;
   };
 
-  const Form: React.FC<HTMLAttributes<HTMLFormElement> & PropsWithChildren> = ({ children, ...props }) => (
-    <form {...props} action={enhancedDispatch}>
+  const Form: React.FC<HTMLAttributes<HTMLFormElement> & PropsWithChildren & { ref?: React.Ref<HTMLFormElement> }> = ({
+    children,
+    ref,
+    ...props
+  }) => (
+    <form {...props} ref={ref} action={enhancedDispatch}>
       {children}
     </form>
   );
