@@ -159,29 +159,27 @@ import { createUserAction } from './actions';
 export default function CreateUserForm() {
   const { Form, FormError, isPending, onFormSubmit, onFormSuccess, onFormError } = useFormAction(createUserAction);
 
-  const handleCreateUser = () => {
-    // Called immediately when form is submitted
-    onFormSubmit(formData => {
-      console.log('📤 Submitting user creation...');
-      analytics.track('user_creation_started', {
-        email: formData.get('email'),
-      });
+  // Called immediately when form is submitted
+  onFormSubmit(formData => {
+    console.log('📤 Submitting user creation...');
+    analytics.track('user_creation_started', {
+      email: formData.get('email'),
     });
+  });
 
-    // Called when action completes successfully
-    onFormSuccess(state => {
-      console.log('✅ User created successfully!');
-      toast.success(state.message);
-      router.push('/users');
-    });
+  // Called when action completes successfully
+  onFormSuccess(state => {
+    console.log('✅ User created successfully!');
+    toast.success(state.message);
+    router.push('/users');
+  });
 
-    // Called when action fails
-    onFormError(state => {
-      console.log('❌ User creation failed');
-      toast.error(state.message);
-      analytics.track('user_creation_failed');
-    });
-  };
+  // Called when action fails
+  onFormError(state => {
+    console.log('❌ User creation failed');
+    toast.error(state.message);
+    analytics.track('user_creation_failed');
+  });
 
   return (
     <Form className="space-y-4">
@@ -190,7 +188,7 @@ export default function CreateUserForm() {
 
       <FormError className="text-red-500" />
 
-      <button type="submit" onClick={handleCreateUser} disabled={isPending} className="btn-primary">
+      <button type="submit" disabled={isPending} className="btn-primary">
         {isPending ? 'Creating...' : 'Create User'}
       </button>
     </Form>
@@ -346,16 +344,3 @@ MIT © [Mattia Malonni](https://github.com/mattiamalonni)
 - [GitHub Repository](https://github.com/mattiamalonni/next-form-action)
 - [Issues](https://github.com/mattiamalonni/next-form-action/issues)
 - [npm Package](https://www.npmjs.com/package/next-form-action)
-
-### Callback Behavior
-
-All callbacks (`onFormSubmit`, `onFormSuccess`, `onFormError`) are **one-shot** - they execute once per form submission and are automatically cleared afterward. This prevents unintended side effects and ensures clean state management.
-
-```tsx
-const handleSubmit = () => {
-  // This callback will run only for this specific submission
-  onFormSuccess(() => {
-    showNotification('Operation completed!');
-  });
-};
-```
