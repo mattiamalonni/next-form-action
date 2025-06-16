@@ -10,31 +10,22 @@ export const useFormAction = (formAction: FormAction) => {
   const router = useRouter();
   const [state, dispatch, isPending] = useActionState(formAction, createFormActionState());
 
-  // Store callbacks using refs to avoid stale closures
-  const successCallbacks = useRef<Array<(state: FormActionState) => void | Promise<void>>>([]);
-  const errorCallbacks = useRef<Array<(state: FormActionState) => void | Promise<void>>>([]);
+  // Store single callbacks
+  const onSuccessCallbackRef = useRef<((state: FormActionState) => void | Promise<void>) | null>(null);
+  const onErrorCallbackRef = useRef<((state: FormActionState) => void | Promise<void>) | null>(null);
+  const onSubmitCallbackRef = useRef<((formData: FormData) => void | Promise<void>) | null>(null);
 
   useEffect(() => {
-    const executeCallbacks = async () => {
-      if (!state.success) {
-        // Execute error callbacks
-        for (const callback of errorCallbacks.current) {
-          await callback(state);
-        }
-        // Clear error callbacks after execution
-        errorCallbacks.current = [];
-      } else if (state.success) {
-        // Execute success callbacks
-        for (const callback of successCallbacks.current) {
-          await callback(state);
-        }
-        // Clear success callbacks after execution
-        successCallbacks.current = [];
-      }
-    };
+    // Execute callbacks based on current state
+    if (state.success && onSuccessCallbackRef.current) {
+      onSuccessCallbackRef.current(state);
+      onSuccessCallbackRef.current = null; // Clear after execution
+    } else if (!state.success && state.message && onErrorCallbackRef.current) {
+      onErrorCallbackRef.current(state);
+      onErrorCallbackRef.current = null; // Clear after execution
+    }
 
-    executeCallbacks();
-
+    // Handle navigation
     if (state.redirect) router.push(state.redirect);
     if (state.refresh) router.refresh();
   }, [state, router]);
@@ -44,18 +35,30 @@ export const useFormAction = (formAction: FormAction) => {
   };
 
   const Form: React.FC<HTMLAttributes<HTMLFormElement> & PropsWithChildren> = ({ children, ...props }) => (
-    <form {...props} action={dispatch}>
+    <form {...props} action={enhancedDispatch}>
       {children}
     </form>
   );
 
-  // Functions to register callbacks that will be executed automatically based on state
   const onFormSuccess = (callback: (state: FormActionState) => void | Promise<void>) => {
-    successCallbacks.current.push(callback);
+    onSuccessCallbackRef.current = callback;
   };
 
   const onFormError = (callback: (state: FormActionState) => void | Promise<void>) => {
-    errorCallbacks.current.push(callback);
+    onErrorCallbackRef.current = callback;
+  };
+
+  const onFormSubmit = (callback: (formData: FormData) => void | Promise<void>) => {
+    onSubmitCallbackRef.current = callback;
+  };
+
+  const enhancedDispatch = async (formData: FormData) => {
+    if (onSubmitCallbackRef.current) {
+      await onSubmitCallbackRef.current(formData);
+      onSubmitCallbackRef.current = null;
+    }
+
+    dispatch(formData);
   };
 
   return {
@@ -65,5 +68,6 @@ export const useFormAction = (formAction: FormAction) => {
     isPending,
     onFormSuccess,
     onFormError,
+    onFormSubmit,
   };
 };
