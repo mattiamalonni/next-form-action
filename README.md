@@ -11,6 +11,8 @@ A TypeScript library for handling form actions in Next.js applications with enha
 - 📝 **Form validation** and error handling
 - ⚡ **Next.js App Router** optimized
 - 🌐 **Dual module support** (ESM + CommonJS)
+- 🔧 **Lifecycle callbacks** for submit, success, and error events
+- 🛡️ **Next.js error handling** for redirects and system errors
 
 ## Installation
 
@@ -45,11 +47,15 @@ export const loginAction = createFormAction('login', async (state, formData, err
     success('Login successful!', {
       redirect: '/dashboard',
     });
-  } catch (error) {
+  } catch (err) {
     error('Invalid credentials');
   }
 });
 ```
+
+**Note:** The library automatically handles Next.js system errors like `redirect()` and `notFound()`, so you can use them directly in your actions without additional error handling.
+
+````
 
 ### 2. Use in Your Component
 
@@ -84,7 +90,7 @@ export default function LoginForm() {
     </Form>
   );
 }
-```
+````
 
 ## API Reference
 
@@ -114,8 +120,9 @@ React hook for managing form state and submission.
 - `FormError`: Component to display error messages
 - `state`: Current form state
 - `isPending`: Boolean indicating if form is submitting
-- `onFormSuccess`: Register success callbacks
-- `onFormError`: Register error callbacks
+- `onFormSubmit`: Register callback for form submission (before processing)
+- `onFormSuccess`: Register callback for successful submissions
+- `onFormError`: Register callback for failed submissions
 
 ### Types
 
@@ -141,6 +148,82 @@ type FormActionParams = Omit<FormActionState, 'payload' | 'success' | 'message'>
 
 ## Advanced Usage
 
+### Complete Lifecycle Management
+
+```tsx
+'use client';
+
+import { useFormAction } from 'next-form-action';
+import { createUserAction } from './actions';
+
+export default function CreateUserForm() {
+  const { Form, FormError, isPending, onFormSubmit, onFormSuccess, onFormError } = useFormAction(createUserAction);
+
+  const handleCreateUser = () => {
+    // Called immediately when form is submitted
+    onFormSubmit(formData => {
+      console.log('📤 Submitting user creation...');
+      analytics.track('user_creation_started', {
+        email: formData.get('email'),
+      });
+    });
+
+    // Called when action completes successfully
+    onFormSuccess(state => {
+      console.log('✅ User created successfully!');
+      toast.success(state.message);
+      router.push('/users');
+    });
+
+    // Called when action fails
+    onFormError(state => {
+      console.log('❌ User creation failed');
+      toast.error(state.message);
+      analytics.track('user_creation_failed');
+    });
+  };
+
+  return (
+    <Form className="space-y-4">
+      <input name="name" placeholder="Name" required />
+      <input name="email" type="email" placeholder="Email" required />
+
+      <FormError className="text-red-500" />
+
+      <button type="submit" onClick={handleCreateUser} disabled={isPending} className="btn-primary">
+        {isPending ? 'Creating...' : 'Create User'}
+      </button>
+    </Form>
+  );
+}
+```
+
+### Next.js System Error Handling
+
+The library automatically handles Next.js system errors like `redirect()`, `notFound()`, and other framework-level errors:
+
+```typescript
+import { createFormAction } from 'next-form-action';
+import { redirect, notFound } from 'next/navigation';
+
+export const userAction = createFormAction('user', async (state, formData, error, success) => {
+  const userId = formData.get('userId') as string;
+
+  // These Next.js errors are automatically handled
+  if (!userId) {
+    notFound(); // Will trigger Next.js 404 page
+  }
+
+  const user = await updateUser(userId, formData);
+
+  if (user.needsVerification) {
+    redirect('/verify'); // Will redirect properly
+  }
+
+  success('User updated successfully!');
+});
+```
+
 ### Custom Success/Error Handling
 
 ```tsx
@@ -152,7 +235,6 @@ import { submitAction } from './actions';
 export default function AdvancedForm() {
   const { Form, state, isPending, onFormSuccess, onFormError } = useFormAction(submitAction);
 
-  // Register custom callbacks
   onFormSuccess(state => {
     console.log('Form submitted successfully!', state);
     // Custom success logic
@@ -264,3 +346,16 @@ MIT © [Mattia Malonni](https://github.com/mattiamalonni)
 - [GitHub Repository](https://github.com/mattiamalonni/next-form-action)
 - [Issues](https://github.com/mattiamalonni/next-form-action/issues)
 - [npm Package](https://www.npmjs.com/package/next-form-action)
+
+### Callback Behavior
+
+All callbacks (`onFormSubmit`, `onFormSuccess`, `onFormError`) are **one-shot** - they execute once per form submission and are automatically cleared afterward. This prevents unintended side effects and ensures clean state management.
+
+```tsx
+const handleSubmit = () => {
+  // This callback will run only for this specific submission
+  onFormSuccess(() => {
+    showNotification('Operation completed!');
+  });
+};
+```
