@@ -21,11 +21,15 @@ export const useFormAction = (formAction: FormAction) => {
         for (const callback of errorCallbacks.current) {
           await callback(state);
         }
+        // Clear error callbacks after execution
+        errorCallbacks.current = [];
       } else if (state.success) {
         // Execute success callbacks
         for (const callback of successCallbacks.current) {
           await callback(state);
         }
+        // Clear success callbacks after execution
+        successCallbacks.current = [];
       }
     };
 

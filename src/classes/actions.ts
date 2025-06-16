@@ -12,12 +12,7 @@ export class FormActionResponse {
   public readonly redirect?: FormActionState['redirect'];
   public readonly refresh?: FormActionState['refresh'];
 
-  constructor(
-    payload: FormData,
-    success: FormActionState['success'],
-    message: FormActionState['message'],
-    params: FormActionParams = {},
-  ) {
+  constructor(payload: FormData, success: FormActionState['success'], message: FormActionState['message'], params: FormActionParams = {}) {
     this.payload = payload;
 
     this.success = success;
