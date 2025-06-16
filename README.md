@@ -55,8 +55,6 @@ export const loginAction = createFormAction('login', async (state, formData, err
 
 **Note:** The library automatically handles Next.js system errors like `redirect()` and `notFound()`, so you can use them directly in your actions without additional error handling.
 
-````
-
 ### 2. Use in Your Component
 
 ```tsx
@@ -80,17 +78,13 @@ export default function LoginForm() {
 
       <FormError className="text-red-500" />
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="w-full p-2 bg-blue-500 text-white rounded disabled:opacity-50"
-      >
+      <button type="submit" disabled={isPending} className="w-full p-2 bg-blue-500 text-white rounded disabled:opacity-50">
         {isPending ? 'Logging in...' : 'Login'}
       </button>
     </Form>
   );
 }
-````
+```
 
 ## API Reference
 
