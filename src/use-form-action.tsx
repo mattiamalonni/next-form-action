@@ -8,6 +8,7 @@ import { FormAction, FormActionState } from '@/types/actions';
 
 export const useFormAction = (formAction: FormAction) => {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [state, dispatch, isPending] = useActionState(formAction, createFormActionState());
 
   // Store single callbacks
@@ -34,12 +35,8 @@ export const useFormAction = (formAction: FormAction) => {
     return state.message ? <div {...props}>{state.message}</div> : null;
   };
 
-  const Form: React.FC<HTMLAttributes<HTMLFormElement> & PropsWithChildren & { ref?: React.Ref<HTMLFormElement> }> = ({
-    children,
-    ref,
-    ...props
-  }) => (
-    <form {...props} ref={ref} action={enhancedDispatch}>
+  const Form: React.FC<HTMLAttributes<HTMLFormElement> & PropsWithChildren> = ({ children, ...props }) => (
+    <form {...props} ref={formRef} action={enhancedDispatch}>
       {children}
     </form>
   );
@@ -70,6 +67,7 @@ export const useFormAction = (formAction: FormAction) => {
     FormError,
     state,
     isPending,
+    formRef,
     onFormSuccess,
     onFormError,
     onFormSubmit,
