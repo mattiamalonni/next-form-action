@@ -60,12 +60,6 @@ export default [
     },
   },
   {
-    files: ['**/*.test.{ts,tsx}', '**/test/**/*.{ts,tsx}'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-    },
-  },
-  {
     files: ['**/*.js'],
     languageOptions: {
       sourceType: 'commonjs',

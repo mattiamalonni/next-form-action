@@ -1,10 +1,9 @@
 // Re-export all form action types and utilities
-export type { FormActionState, FormAction, FormActionParams } from '@/types/actions';
+export type { ActionState, Action, ActionParams } from '@/types/actions';
 
-export { FormActionResponse, FormActionError, FormActionSuccess } from '@/classes/actions';
+export { ActionResponse, ActionError, ActionSuccess } from '@/classes/actions';
 
-export { createFormAction, createFormActionState } from '@/actions';
+export { createAction, createActionState } from '@/actions';
 
 // Re-export the form hooks
-export { useFormAction } from '@/use-form-action';
-export { useExperimentalFormAction } from '@/use-stable-form-action';
+export { useAction } from '@/use-action';

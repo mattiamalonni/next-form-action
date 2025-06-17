@@ -1,18 +1,18 @@
-import { FormActionParams, FormActionState } from '@/types/actions';
+import { ActionParams, ActionState } from '@/types/actions';
 
-export class FormActionResponse {
+export class ActionResponse {
   public readonly payload: FormData;
 
-  public readonly success: FormActionState['success'];
-  public readonly message: FormActionState['message'];
+  public readonly success: ActionState['success'];
+  public readonly message: ActionState['message'];
 
-  public readonly formErrors?: FormActionState['formErrors'];
-  public readonly extra?: FormActionState['extra'];
+  public readonly formErrors?: ActionState['formErrors'];
+  public readonly extra?: ActionState['extra'];
 
-  public readonly redirect?: FormActionState['redirect'];
-  public readonly refresh?: FormActionState['refresh'];
+  public readonly redirect?: ActionState['redirect'];
+  public readonly refresh?: ActionState['refresh'];
 
-  constructor(payload: FormData, success: FormActionState['success'], message: FormActionState['message'], params: FormActionParams = {}) {
+  constructor(payload: FormData, success: ActionState['success'], message: ActionState['message'], params: ActionParams = {}) {
     this.payload = payload;
 
     this.success = success;
@@ -25,7 +25,7 @@ export class FormActionResponse {
     this.refresh = params.refresh;
   }
 
-  toResponse(): FormActionState {
+  toResponse(): ActionState {
     return {
       payload: this.payload,
 
@@ -41,14 +41,14 @@ export class FormActionResponse {
   }
 }
 
-export class FormActionError extends FormActionResponse {
-  constructor(payload: FormData, message: FormActionState['message'], params: FormActionParams = {}) {
+export class ActionError extends ActionResponse {
+  constructor(payload: FormData, message: ActionState['message'], params: ActionParams = {}) {
     super(payload, false, message, params);
   }
 }
 
-export class FormActionSuccess extends FormActionResponse {
-  constructor(payload: FormData, message: FormActionState['message'], params: FormActionParams = {}) {
+export class ActionSuccess extends ActionResponse {
+  constructor(payload: FormData, message: ActionState['message'], params: ActionParams = {}) {
     super(payload, true, message, params);
   }
 }

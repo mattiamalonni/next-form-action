@@ -1,36 +1,36 @@
-import { FormActionParams, FormActionState } from '@/types/actions';
-import { FormActionResponse, FormActionError, FormActionSuccess } from '@/classes/actions';
+import { ActionParams, ActionState } from '@/types/actions';
+import { ActionResponse, ActionError, ActionSuccess } from '@/classes/actions';
 
-export const createFormActionState = (payload: FormData = new FormData(), params: FormActionParams = {}): FormActionState => {
+export const createActionState = (payload: FormData = new FormData(), params: ActionParams = {}): ActionState => {
   return { ...params, message: null, success: false, payload };
 };
 
-const throwFormActionError = (payload: FormData, message: FormActionState['message'], params: FormActionParams = {}) => {
-  throw new FormActionError(payload, message, params);
+const throwActionError = (payload: FormData, message: ActionState['message'], params: ActionParams = {}) => {
+  throw new ActionError(payload, message, params);
 };
 
-const throwFormActionSuccess = (payload: FormData, message: FormActionState['message'], params: FormActionParams = {}) => {
-  throw new FormActionSuccess(payload, message, params);
+const throwActionSuccess = (payload: FormData, message: ActionState['message'], params: ActionParams = {}) => {
+  throw new ActionSuccess(payload, message, params);
 };
 
-export const createFormAction = (
+export const createAction = (
   context: string,
   actionFn: (
-    state: FormActionState,
+    state: ActionState,
     formData: FormData,
-    formActionError: (message: FormActionState['message'], params?: FormActionParams) => never,
-    formActionSuccess: (message: FormActionState['message'], params?: FormActionParams) => never,
-  ) => Promise<FormActionState>,
-): ((state: FormActionState, formData: FormData) => Promise<FormActionState>) => {
-  return async (state: FormActionState, formData: FormData): Promise<FormActionState> => {
+    error: (message: ActionState['message'], params?: ActionParams) => never,
+    success: (message: ActionState['message'], params?: ActionParams) => never,
+  ) => Promise<ActionState>,
+): ((state: ActionState, formData: FormData) => Promise<ActionState>) => {
+  return async (state: ActionState, formData: FormData): Promise<ActionState> => {
     try {
-      const error = (message: FormActionState['message'], params: FormActionParams = {}) => throwFormActionError(formData, message, params);
+      const error = (message: ActionState['message'], params: ActionParams = {}) => throwActionError(formData, message, params);
 
-      const success = (message: FormActionState['message'], params: FormActionParams = {}) => throwFormActionSuccess(formData, message, params);
+      const success = (message: ActionState['message'], params: ActionParams = {}) => throwActionSuccess(formData, message, params);
 
       return await actionFn(state, formData, error, success);
     } catch (error) {
-      if (error instanceof FormActionResponse) {
+      if (error instanceof ActionResponse) {
         return error.toResponse();
       }
 
@@ -40,7 +40,7 @@ export const createFormAction = (
       }
 
       console.error(`Error in form action "${context}":`, error);
-      return new FormActionError(formData, 'An unexpected error occurred. Please try again.').toResponse();
+      return new ActionError(formData, 'An unexpected error occurred. Please try again.').toResponse();
     }
   };
 };

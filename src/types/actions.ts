@@ -1,4 +1,4 @@
-export type FormActionState = {
+export type ActionState = {
   payload?: FormData;
 
   success: boolean;
@@ -11,6 +11,6 @@ export type FormActionState = {
   refresh?: boolean;
 };
 
-export type FormAction = (state: FormActionState, formData: FormData) => Promise<FormActionState>;
+export type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
 
-export type FormActionParams = Omit<FormActionState, 'payload' | 'success' | 'message'>;
+export type ActionParams = Omit<ActionState, 'payload' | 'success' | 'message'>;

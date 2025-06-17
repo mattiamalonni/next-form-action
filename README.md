@@ -29,9 +29,9 @@ pnpm add next-form-action
 ### 1. Create a Form Action
 
 ```typescript
-import { createFormAction } from 'next-form-action';
+import { createAction } from 'next-form-action';
 
-export const loginAction = createFormAction('login', async (state, formData, error, success) => {
+export const loginAction = createAction('login', async (state, formData, error, success) => {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
@@ -60,11 +60,11 @@ export const loginAction = createFormAction('login', async (state, formData, err
 ```tsx
 'use client';
 
-import { useFormAction } from 'next-form-action';
+import { useAction } from 'next-form-action';
 import { loginAction } from './actions';
 
 export default function LoginForm() {
-  const { Form, FormError, state, isPending } = useFormAction(loginAction);
+  const { Form, FormError, state, isPending } = useAction(loginAction);
 
   return (
     <Form className="space-y-4">
@@ -88,7 +88,7 @@ export default function LoginForm() {
 
 ## API Reference
 
-### `createFormAction(context, actionFn)`
+### `createAction(context, actionFn)`
 
 Creates a form action with built-in error handling and state management.
 
@@ -99,12 +99,12 @@ Creates a form action with built-in error handling and state management.
 
 **Action Function Parameters:**
 
-- `state` (FormActionState): Current form state
+- `state` (ActionState): Current form state
 - `formData` (FormData): Form data from submission
 - `error` (function): Function to throw an error response
 - `success` (function): Function to throw a success response
 
-### `useFormAction(formAction)`
+### `useAction(action)`
 
 React hook for managing form state and submission.
 
@@ -114,16 +114,17 @@ React hook for managing form state and submission.
 - `FormError`: Component to display error messages
 - `state`: Current form state
 - `isPending`: Boolean indicating if form is submitting
+- `formRef`: Ref of the form element
 - `onFormSubmit`: Register callback for form submission (before processing)
 - `onFormSuccess`: Register callback for successful submissions
 - `onFormError`: Register callback for failed submissions
 
 ### Types
 
-#### `FormActionState`
+#### `ActionState`
 
 ```typescript
-type FormActionState = {
+type ActionState = {
   payload?: FormData;
   success: boolean;
   message: string | null;
@@ -134,10 +135,10 @@ type FormActionState = {
 };
 ```
 
-#### `FormActionParams`
+#### `ActionParams`
 
 ```typescript
-type FormActionParams = Omit<FormActionState, 'payload' | 'success' | 'message'>;
+type ActionParams = Omit<ActionState, 'payload' | 'success' | 'message'>;
 ```
 
 ## Advanced Usage
@@ -147,11 +148,11 @@ type FormActionParams = Omit<FormActionState, 'payload' | 'success' | 'message'>
 ```tsx
 'use client';
 
-import { useFormAction } from 'next-form-action';
+import { useAction } from 'next-form-action';
 import { createUserAction } from './actions';
 
 export default function CreateUserForm() {
-  const { Form, FormError, isPending, onFormSubmit, onFormSuccess, onFormError } = useFormAction(createUserAction);
+  const { Form, FormError, isPending, onFormSubmit, onFormSuccess, onFormError } = useAction(createUserAction);
 
   // Called immediately when form is submitted
   onFormSubmit(formData => {
@@ -195,10 +196,10 @@ export default function CreateUserForm() {
 The library automatically handles Next.js system errors like `redirect()`, `notFound()`, and other framework-level errors:
 
 ```typescript
-import { createFormAction } from 'next-form-action';
+import { createAction } from 'next-form-action';
 import { redirect, notFound } from 'next/navigation';
 
-export const userAction = createFormAction('user', async (state, formData, error, success) => {
+export const userAction = createAction('user', async (state, formData, error, success) => {
   const userId = formData.get('userId') as string;
 
   // These Next.js errors are automatically handled
@@ -221,11 +222,11 @@ export const userAction = createFormAction('user', async (state, formData, error
 ```tsx
 'use client';
 
-import { useFormAction } from 'next-form-action';
+import { useAction } from 'next-form-action';
 import { submitAction } from './actions';
 
 export default function AdvancedForm() {
-  const { Form, state, isPending, onFormSuccess, onFormError } = useFormAction(submitAction);
+  const { Form, state, isPending, onFormSuccess, onFormError } = useAction(submitAction);
 
   onFormSuccess(state => {
     console.log('Form submitted successfully!', state);
@@ -244,9 +245,9 @@ export default function AdvancedForm() {
 ### Form Validation with Multiple Errors
 
 ```typescript
-import { createFormAction } from 'next-form-action';
+import { createAction } from 'next-form-action';
 
-export const signupAction = createFormAction('signup', async (state, formData, error, success) => {
+export const signupAction = createAction('signup', async (state, formData, error, success) => {
   const formErrors: Record<string, string[]> = {};
 
   const email = formData.get('email') as string;
@@ -278,9 +279,9 @@ export const signupAction = createFormAction('signup', async (state, formData, e
 ### Redirect and Refresh
 
 ```typescript
-import { createFormAction } from 'next-form-action';
+import { createAction } from 'next-form-action';
 
-export const updateProfileAction = createFormAction('updateProfile', async (state, formData, error, success) => {
+export const updateProfileAction = createAction('updateProfile', async (state, formData, error, success) => {
   // Update logic...
 
   success('Profile updated!', {
@@ -288,7 +289,7 @@ export const updateProfileAction = createFormAction('updateProfile', async (stat
   });
 });
 
-export const deleteItemAction = createFormAction('deleteItem', async (state, formData, error, success) => {
+export const deleteItemAction = createAction('deleteItem', async (state, formData, error, success) => {
   // Delete logic...
 
   success('Item deleted!', {

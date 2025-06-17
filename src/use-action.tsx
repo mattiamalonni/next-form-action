@@ -1,34 +1,29 @@
 'use client';
 
-import React, { PropsWithChildren, useState, useEffect, HTMLAttributes, useRef, useTransition } from 'react';
+import React, { PropsWithChildren, useActionState, useEffect, HTMLAttributes, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { createFormActionState } from '@/actions';
-import { FormAction, FormActionState } from '@/types/actions';
+import { createActionState } from '@/actions';
+import { Action, ActionState } from '@/types/actions';
 
-export const useExperimentalFormAction = (formAction: FormAction) => {
+export const useAction = (action: Action, actionState?: ActionState) => {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const [state, setState] = useState<FormActionState>(createFormActionState());
-  const [isPending, startTransition] = useTransition();
+  const [state, dispatch, isPending] = useActionState(action, actionState || createActionState());
 
   // Store single callbacks
-  const onSuccessCallbackRef = useRef<((state: FormActionState) => void | Promise<void>) | null>(null);
-  const onErrorCallbackRef = useRef<((state: FormActionState) => void | Promise<void>) | null>(null);
+  const onSuccessCallbackRef = useRef<((state: ActionState) => void | Promise<void>) | null>(null);
+  const onErrorCallbackRef = useRef<((state: ActionState) => void | Promise<void>) | null>(null);
   const onSubmitCallbackRef = useRef<((formData: FormData) => void | Promise<void>) | null>(null);
 
   useEffect(() => {
     // Execute callbacks based on current state
     if (state.success && onSuccessCallbackRef.current) {
       onSuccessCallbackRef.current(state);
-      onSuccessCallbackRef.current = null; // Clear after execution
-      // Reset form on success
-      if (formRef.current) {
-        formRef.current.reset();
-      }
+      onSuccessCallbackRef.current = null;
     } else if (!state.success && state.message && onErrorCallbackRef.current) {
       onErrorCallbackRef.current(state);
-      onErrorCallbackRef.current = null; // Clear after execution
+      onErrorCallbackRef.current = null;
     }
 
     // Handle navigation
@@ -36,7 +31,7 @@ export const useExperimentalFormAction = (formAction: FormAction) => {
     if (state.refresh) router.refresh();
   }, [state, router]);
 
-  const FormError: React.FC<HTMLAttributes<HTMLDivElement>> = props => {
+  const FormError: React.FC<HTMLAttributes<HTMLDivElement>> = (...props) => {
     return state.message ? <div {...props}>{state.message}</div> : null;
   };
 
@@ -46,23 +41,16 @@ export const useExperimentalFormAction = (formAction: FormAction) => {
     </form>
   );
 
-  const onFormSuccess = (callback: (state: FormActionState) => void | Promise<void>) => {
+  const onFormSuccess = (callback: (state: ActionState) => void | Promise<void>) => {
     onSuccessCallbackRef.current = callback;
   };
 
-  const onFormError = (callback: (state: FormActionState) => void | Promise<void>) => {
+  const onFormError = (callback: (state: ActionState) => void | Promise<void>) => {
     onErrorCallbackRef.current = callback;
   };
 
   const onFormSubmit = (callback: (formData: FormData) => void | Promise<void>) => {
     onSubmitCallbackRef.current = callback;
-  };
-
-  const resetForm = () => {
-    if (formRef.current) {
-      formRef.current.reset();
-    }
-    setState(createFormActionState());
   };
 
   const enhancedDispatch = async (formData: FormData) => {
@@ -71,10 +59,7 @@ export const useExperimentalFormAction = (formAction: FormAction) => {
       onSubmitCallbackRef.current = null;
     }
 
-    startTransition(async () => {
-      const newState = await formAction(state, formData);
-      setState(newState);
-    });
+    dispatch(formData);
   };
 
   return {
@@ -86,6 +71,5 @@ export const useExperimentalFormAction = (formAction: FormAction) => {
     onFormSuccess,
     onFormError,
     onFormSubmit,
-    resetForm,
   };
 };
