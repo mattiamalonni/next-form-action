@@ -5,5 +5,6 @@ export { FormActionResponse, FormActionError, FormActionSuccess } from '@/classe
 
 export { createFormAction, createFormActionState } from '@/actions';
 
-// Re-export the form hook
+// Re-export the form hooks
 export { useFormAction } from '@/use-form-action';
+export { useExperimentalFormAction } from '@/use-stable-form-action';
