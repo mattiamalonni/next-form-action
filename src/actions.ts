@@ -1,5 +1,5 @@
-import { ActionParams, ActionState } from '@/types/actions';
-import { ActionResponse, ActionError, ActionSuccess } from '@/classes/actions';
+import { ActionParams, ActionState } from '@/types';
+import { ActionResponse, ActionError, ActionSuccess } from '@/classes';
 
 export const createActionState = (payload: FormData = new FormData(), params: ActionParams = {}): ActionState => {
   return { ...params, payload };
@@ -31,7 +31,10 @@ export const createAction = (
       }
 
       console.error(`Error in form action "${context}":`, error);
-      return new ActionError('An unexpected error occurred. Please try again.').toResponse(formData);
+
+      const message = error instanceof Error && error.message ? error.message : 'An unexpected error occurred. Please try again.';
+
+      return new ActionError(message).toResponse(formData);
     }
   };
 };

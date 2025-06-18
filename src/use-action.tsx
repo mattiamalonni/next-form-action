@@ -4,7 +4,7 @@ import React, { PropsWithChildren, useActionState, useEffect, HTMLAttributes, us
 import { useRouter } from 'next/navigation';
 
 import { createActionState } from '@/actions';
-import { Action, ActionState } from '@/types/actions';
+import { Action, ActionState } from '@/types';
 
 export const useAction = (action: Action, actionState?: ActionState) => {
   const router = useRouter();

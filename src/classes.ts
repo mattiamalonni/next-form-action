@@ -1,4 +1,4 @@
-import { ActionParams, ActionState } from '@/types/actions';
+import { ActionParams, ActionState } from '@/types';
 
 export class ActionResponse extends Error {
   public readonly payload?: FormData;
