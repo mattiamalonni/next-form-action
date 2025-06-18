@@ -1,8 +1,8 @@
 export type ActionState = {
   payload?: FormData;
 
-  success: boolean;
-  message: string | null;
+  success?: boolean;
+  message?: string;
 
   formErrors?: Record<string, string[]>;
   extra?: Record<string, unknown>;
@@ -13,4 +13,4 @@ export type ActionState = {
 
 export type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
 
-export type ActionParams = Omit<ActionState, 'payload' | 'success' | 'message'>;
+export type ActionParams = Omit<ActionState, 'message' | 'payload' | 'success'>;

@@ -18,10 +18,10 @@ export const useAction = (action: Action, actionState?: ActionState) => {
 
   useEffect(() => {
     // Execute callbacks based on current state
-    if (state.success && onSuccessCallbackRef.current) {
+    if (state.success === true && onSuccessCallbackRef.current) {
       onSuccessCallbackRef.current(state);
       onSuccessCallbackRef.current = null;
-    } else if (!state.success && state.message && onErrorCallbackRef.current) {
+    } else if (state.success === false && state.message && onErrorCallbackRef.current) {
       onErrorCallbackRef.current(state);
       onErrorCallbackRef.current = null;
     }

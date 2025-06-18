@@ -1,10 +1,9 @@
 import { ActionParams, ActionState } from '@/types/actions';
 
-export class ActionResponse {
+export class ActionResponse extends Error {
   public readonly payload: FormData;
 
   public readonly success: ActionState['success'];
-  public readonly message: ActionState['message'];
 
   public readonly formErrors?: ActionState['formErrors'];
   public readonly extra?: ActionState['extra'];
@@ -12,11 +11,11 @@ export class ActionResponse {
   public readonly redirect?: ActionState['redirect'];
   public readonly refresh?: ActionState['refresh'];
 
-  constructor(payload: FormData, success: ActionState['success'], message: ActionState['message'], params: ActionParams = {}) {
+  constructor(message: ActionState['message'], success: ActionState['success'], payload: FormData, params: ActionParams = {}) {
+    super(message);
     this.payload = payload;
 
     this.success = success;
-    this.message = message;
 
     this.formErrors = params.formErrors;
     this.extra = params.extra;
@@ -42,13 +41,13 @@ export class ActionResponse {
 }
 
 export class ActionError extends ActionResponse {
-  constructor(payload: FormData, message: ActionState['message'], params: ActionParams = {}) {
-    super(payload, false, message, params);
+  constructor(message: ActionState['message'], payload: FormData, params: ActionParams = {}) {
+    super(message, false, payload, params);
   }
 }
 
 export class ActionSuccess extends ActionResponse {
-  constructor(payload: FormData, message: ActionState['message'], params: ActionParams = {}) {
-    super(payload, true, message, params);
+  constructor(message: ActionState['message'], payload: FormData, params: ActionParams = {}) {
+    super(message, true, payload, params);
   }
 }

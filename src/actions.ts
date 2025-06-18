@@ -2,20 +2,12 @@ import { ActionParams, ActionState } from '@/types/actions';
 import { ActionResponse, ActionError, ActionSuccess } from '@/classes/actions';
 
 export const createActionState = (payload: FormData = new FormData(), params: ActionParams = {}): ActionState => {
-  return { ...params, message: null, success: false, payload };
-};
-
-const throwActionError = (payload: FormData, message: ActionState['message'], params: ActionParams = {}): never => {
-  throw new ActionError(payload, message, params);
-};
-
-const throwActionSuccess = (payload: FormData, message: ActionState['message'], params: ActionParams = {}): never => {
-  throw new ActionSuccess(payload, message, params);
+  return { ...params, payload };
 };
 
 export const createAction = (
   context: string,
-  actionFn: (
+  handler: (
     state: ActionState,
     formData: FormData,
     error: (message: ActionState['message'], params?: ActionParams) => never,
@@ -24,10 +16,14 @@ export const createAction = (
 ): ((state: ActionState, formData: FormData) => Promise<ActionState>) => {
   return async (state: ActionState, formData: FormData): Promise<ActionState> => {
     try {
-      const error = (message: ActionState['message'], params: ActionParams = {}): never => throwActionError(formData, message, params);
-      const success = (message: ActionState['message'], params: ActionParams = {}): never => throwActionSuccess(formData, message, params);
+      function error(message: ActionState['message'], params?: ActionParams): never {
+        throw new ActionError(message, formData, params);
+      }
+      function success(message: ActionState['message'], params?: ActionParams): never {
+        throw new ActionSuccess(message, formData, params);
+      }
 
-      return await actionFn(state, formData, error, success);
+      return await handler(state, formData, error, success);
     } catch (error) {
       if (error instanceof ActionResponse) {
         return error.toResponse();
@@ -39,7 +35,7 @@ export const createAction = (
       }
 
       console.error(`Error in form action "${context}":`, error);
-      return new ActionError(formData, 'An unexpected error occurred. Please try again.').toResponse();
+      return new ActionError('An unexpected error occurred. Please try again.', formData).toResponse();
     }
   };
 };
