@@ -5,11 +5,11 @@ export const createActionState = (payload: FormData = new FormData(), params: Ac
   return { ...params, message: null, success: false, payload };
 };
 
-const throwActionError = (payload: FormData, message: ActionState['message'], params: ActionParams = {}) => {
+const throwActionError = (payload: FormData, message: ActionState['message'], params: ActionParams = {}): never => {
   throw new ActionError(payload, message, params);
 };
 
-const throwActionSuccess = (payload: FormData, message: ActionState['message'], params: ActionParams = {}) => {
+const throwActionSuccess = (payload: FormData, message: ActionState['message'], params: ActionParams = {}): never => {
   throw new ActionSuccess(payload, message, params);
 };
 
@@ -24,9 +24,8 @@ export const createAction = (
 ): ((state: ActionState, formData: FormData) => Promise<ActionState>) => {
   return async (state: ActionState, formData: FormData): Promise<ActionState> => {
     try {
-      const error = (message: ActionState['message'], params: ActionParams = {}) => throwActionError(formData, message, params);
-
-      const success = (message: ActionState['message'], params: ActionParams = {}) => throwActionSuccess(formData, message, params);
+      const error = (message: ActionState['message'], params: ActionParams = {}): never => throwActionError(formData, message, params);
+      const success = (message: ActionState['message'], params: ActionParams = {}): never => throwActionSuccess(formData, message, params);
 
       return await actionFn(state, formData, error, success);
     } catch (error) {
