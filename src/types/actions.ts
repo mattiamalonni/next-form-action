@@ -13,4 +13,4 @@ export type ActionState = {
 
 export type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
 
-export type ActionParams = Omit<ActionState, 'message' | 'payload' | 'success'>;
+export type ActionParams = Omit<ActionState, 'message' | 'success'>;

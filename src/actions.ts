@@ -5,28 +5,24 @@ export const createActionState = (payload: FormData = new FormData(), params: Ac
   return { ...params, payload };
 };
 
+export function error(message: ActionState['message'], params: ActionParams = {}): never {
+  throw new ActionError(message, params);
+}
+
+export function success(message: ActionState['message'], params: ActionParams = {}): never {
+  throw new ActionSuccess(message, params);
+}
+
 export const createAction = (
   context: string,
-  handler: (
-    state: ActionState,
-    formData: FormData,
-    error: (message: ActionState['message'], params?: ActionParams) => never,
-    success: (message: ActionState['message'], params?: ActionParams) => never,
-  ) => Promise<ActionState>,
+  handler: (state: ActionState, formData: FormData) => Promise<ActionState>,
 ): ((state: ActionState, formData: FormData) => Promise<ActionState>) => {
   return async (state: ActionState, formData: FormData): Promise<ActionState> => {
     try {
-      function error(message: ActionState['message'], params?: ActionParams): never {
-        throw new ActionError(message, formData, params);
-      }
-      function success(message: ActionState['message'], params?: ActionParams): never {
-        throw new ActionSuccess(message, formData, params);
-      }
-
-      return await handler(state, formData, error, success);
+      return await handler(state, formData);
     } catch (error) {
       if (error instanceof ActionResponse) {
-        return error.toResponse();
+        return error.toResponse(formData);
       }
 
       // Re-throw Next.js system errors (redirect, notFound, etc.)
@@ -35,7 +31,7 @@ export const createAction = (
       }
 
       console.error(`Error in form action "${context}":`, error);
-      return new ActionError('An unexpected error occurred. Please try again.', formData).toResponse();
+      return new ActionError('An unexpected error occurred. Please try again.').toResponse(formData);
     }
   };
 };

@@ -13,6 +13,7 @@ A TypeScript library for handling form actions in Next.js applications with enha
 - 🌐 **Dual module support** (ESM + CommonJS)
 - 🔧 **Lifecycle callbacks** for submit, success, and error events
 - 🛡️ **Next.js error handling** for redirects and system errors
+- ✨ **Global error/success functions** for clean action code
 
 ## Installation
 
@@ -29,9 +30,9 @@ pnpm add next-form-action
 ### 1. Create a Form Action
 
 ```typescript
-import { createAction } from 'next-form-action';
+import { createAction, error, success } from 'next-form-action';
 
-export const loginAction = createAction('login', async (state, formData, error, success) => {
+export const loginAction = createAction('login', async (state, formData) => {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
@@ -88,21 +89,37 @@ export default function LoginForm() {
 
 ## API Reference
 
-### `createAction(context, actionFn)`
+### `createAction(context, handler)`
 
 Creates a form action with built-in error handling and state management.
 
 **Parameters:**
 
 - `context` (string): A descriptive name for the action (used for logging)
-- `actionFn` (function): The action function that handles form submission
+- `handler` (function): The action function that handles form submission
 
 **Action Function Parameters:**
 
 - `state` (ActionState): Current form state
 - `formData` (FormData): Form data from submission
-- `error` (function): Function to throw an error response
-- `success` (function): Function to throw a success response
+
+### `error(message, params?)`
+
+Throws an error response to terminate action execution with an error state.
+
+**Parameters:**
+
+- `message` (string | null): Error message to display
+- `params` (ActionParams, optional): Additional parameters like formErrors, redirect, etc.
+
+### `success(message, params?)`
+
+Throws a success response to terminate action execution with a success state.
+
+**Parameters:**
+
+- `message` (string | null): Success message to display
+- `params` (ActionParams, optional): Additional parameters like redirect, refresh, etc.
 
 ### `useAction(action)`
 
@@ -196,10 +213,10 @@ export default function CreateUserForm() {
 The library automatically handles Next.js system errors like `redirect()`, `notFound()`, and other framework-level errors:
 
 ```typescript
-import { createAction } from 'next-form-action';
+import { createAction, error, success } from 'next-form-action';
 import { redirect, notFound } from 'next/navigation';
 
-export const userAction = createAction('user', async (state, formData, error, success) => {
+export const userAction = createAction('user', async (state, formData) => {
   const userId = formData.get('userId') as string;
 
   // These Next.js errors are automatically handled
@@ -245,9 +262,9 @@ export default function AdvancedForm() {
 ### Form Validation with Multiple Errors
 
 ```typescript
-import { createAction } from 'next-form-action';
+import { createAction, error, success } from 'next-form-action';
 
-export const signupAction = createAction('signup', async (state, formData, error, success) => {
+export const signupAction = createAction('signup', async (state, formData) => {
   const formErrors: Record<string, string[]> = {};
 
   const email = formData.get('email') as string;
@@ -279,9 +296,9 @@ export const signupAction = createAction('signup', async (state, formData, error
 ### Redirect and Refresh
 
 ```typescript
-import { createAction } from 'next-form-action';
+import { createAction, success } from 'next-form-action';
 
-export const updateProfileAction = createAction('updateProfile', async (state, formData, error, success) => {
+export const updateProfileAction = createAction('updateProfile', async (state, formData) => {
   // Update logic...
 
   success('Profile updated!', {
@@ -289,7 +306,7 @@ export const updateProfileAction = createAction('updateProfile', async (state, f
   });
 });
 
-export const deleteItemAction = createAction('deleteItem', async (state, formData, error, success) => {
+export const deleteItemAction = createAction('deleteItem', async (state, formData) => {
   // Delete logic...
 
   success('Item deleted!', {
@@ -297,6 +314,28 @@ export const deleteItemAction = createAction('deleteItem', async (state, formDat
   });
 });
 ```
+
+## Key Features
+
+### Global Error/Success Functions
+
+The library now provides global `error()` and `success()` functions that can be imported and used directly in your actions, making the code cleaner and more intuitive:
+
+```typescript
+import { createAction, error, success } from 'next-form-action';
+
+export const myAction = createAction('example', async (state, formData) => {
+  if (!formData.get('required-field')) {
+    error('Required field is missing'); // Throws and terminates execution
+  }
+
+  // Do your logic...
+
+  success('Operation completed successfully!'); // Throws and terminates execution
+});
+```
+
+The `error()` and `success()` functions work like `throw` statements - they immediately terminate the action execution and return the appropriate response to the client.
 
 ## Requirements
 
