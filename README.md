@@ -103,13 +103,24 @@ Creates a form action with built-in error handling and state management.
 - `state` (ActionState): Current form state
 - `formData` (FormData): Form data from submission
 
+### `createActionState(payload?, params?)`
+
+Creates an initial action state object.
+
+**Parameters:**
+
+- `payload` (FormData, optional): Initial form data (defaults to empty FormData)
+- `params` (ActionParams, optional): Additional state parameters
+
+**Returns:** ActionState object
+
 ### `error(message, params?)`
 
 Throws an error response to terminate action execution with an error state.
 
 **Parameters:**
 
-- `message` (string | null): Error message to display
+- `message` (string | undefined): Error message to display
 - `params` (ActionParams, optional): Additional parameters like formErrors, redirect, etc.
 
 ### `success(message, params?)`
@@ -118,12 +129,17 @@ Throws a success response to terminate action execution with a success state.
 
 **Parameters:**
 
-- `message` (string | null): Success message to display
+- `message` (string | undefined): Success message to display
 - `params` (ActionParams, optional): Additional parameters like redirect, refresh, etc.
 
-### `useAction(action)`
+### `useAction(action, actionState?)`
 
 React hook for managing form state and submission.
+
+**Parameters:**
+
+- `action` (Action): The form action created with `createAction`
+- `actionState` (ActionState, optional): Initial state for the form
 
 **Returns:**
 
@@ -143,8 +159,8 @@ React hook for managing form state and submission.
 ```typescript
 type ActionState = {
   payload?: FormData;
-  success: boolean;
-  message: string | null;
+  success?: boolean;
+  message?: string;
   formErrors?: Record<string, string[]>;
   extra?: Record<string, unknown>;
   redirect?: string;
@@ -155,8 +171,18 @@ type ActionState = {
 #### `ActionParams`
 
 ```typescript
-type ActionParams = Omit<ActionState, 'payload' | 'success' | 'message'>;
+type ActionParams = Omit<ActionState, 'message' | 'success'>;
 ```
+
+#### Action Classes
+
+The library also exports several classes for advanced use cases:
+
+- `ActionResponse`: Base class for action responses
+- `ActionError`: Error response class (extends ActionResponse)
+- `ActionSuccess`: Success response class (extends ActionResponse)
+
+These are primarily used internally but can be useful for custom error handling or testing scenarios.
 
 ## Advanced Usage
 
@@ -207,6 +233,8 @@ export default function CreateUserForm() {
   );
 }
 ```
+
+**Note:** The `onFormSuccess` and `onFormError` callbacks are single-use - they execute once and then are automatically cleared. This prevents duplicate executions and memory leaks.
 
 ### Next.js System Error Handling
 
@@ -345,25 +373,36 @@ The `error()` and `success()` functions work like `throw` statements - they imme
 
 ## Development
 
-This project includes several utility scripts to help with development and publishing:
+This project uses `unbuild` for building and includes several utility scripts to help with development and publishing:
 
 ### Development Scripts
 
 ```bash
-# Run all quality checks
+# Run all quality checks (type-check + lint + format check)
 pnpm run check
 
-# Build the package
+# Build the package (generates both ESM and CommonJS)
 pnpm run build
 
-# Type check
+# Type check without emitting files
 pnpm run type-check
 
-# Lint and format
+# Lint code
 pnpm run lint
 pnpm run lint:fix
+
+# Format code
+pnpm run format
 pnpm run format:check
 ```
+
+### Module System
+
+The package is built with dual module support:
+
+- **ESM**: `dist/index.mjs` (primary module format)
+- **CommonJS**: `dist/index.cjs` (for compatibility)
+- **TypeScript**: `dist/index.d.ts` (type definitions)
 
 ## Contributing
 
