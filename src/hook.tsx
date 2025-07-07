@@ -1,6 +1,6 @@
 'use client';
 
-import React, { PropsWithChildren, useActionState, useEffect, HTMLAttributes, useRef } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { createActionState } from '@/actions';
@@ -17,59 +17,49 @@ export const useAction = (action: Action, actionState?: ActionState) => {
   const onSubmitCallbackRef = useRef<((formData: FormData) => void | Promise<void>) | null>(null);
 
   useEffect(() => {
-    // Execute callbacks based on current state
-    if (state.success === true && onSuccessCallbackRef.current) {
-      onSuccessCallbackRef.current(state);
-      onSuccessCallbackRef.current = null;
-    } else if (state.success === false && state.message && onErrorCallbackRef.current) {
-      onErrorCallbackRef.current(state);
-      onErrorCallbackRef.current = null;
-    }
+    const executeCallback = async () => {
+      if (state.success === true && onSuccessCallbackRef.current) {
+        await onSuccessCallbackRef.current(state);
+        onSuccessCallbackRef.current = null;
+      } else if (state.success === false && state.message && onErrorCallbackRef.current) {
+        await onErrorCallbackRef.current(state);
+        onErrorCallbackRef.current = null;
+      }
+    };
 
-    // Handle navigation
+    executeCallback();
+
     if (state.redirect) router.push(state.redirect);
     if (state.refresh) router.refresh();
   }, [state, router]);
 
-  const FormError: React.FC<HTMLAttributes<HTMLDivElement>> = (...props) => {
-    return state.message ? <div {...props}>{state.message}</div> : null;
-  };
-
-  const Form: React.FC<HTMLAttributes<HTMLFormElement> & PropsWithChildren> = ({ children, ...props }) => (
-    <form {...props} ref={formRef} action={enhancedDispatch}>
-      {children}
-    </form>
-  );
-
-  const onFormSuccess = (callback: (state: ActionState) => void | Promise<void>) => {
+  const onSuccess = (callback: (state: ActionState) => void | Promise<void>) => {
     onSuccessCallbackRef.current = callback;
   };
 
-  const onFormError = (callback: (state: ActionState) => void | Promise<void>) => {
+  const onError = (callback: (state: ActionState) => void | Promise<void>) => {
     onErrorCallbackRef.current = callback;
   };
 
-  const onFormSubmit = (callback: (formData: FormData) => void | Promise<void>) => {
+  const onSubmit = (callback: (formData: FormData) => void | Promise<void>) => {
     onSubmitCallbackRef.current = callback;
   };
 
-  const enhancedDispatch = async (formData: FormData) => {
+  const wrappedDispatch = async (formData: FormData) => {
     if (onSubmitCallbackRef.current) {
       await onSubmitCallbackRef.current(formData);
       onSubmitCallbackRef.current = null;
     }
-
-    dispatch(formData);
+    return dispatch(formData);
   };
 
   return {
-    Form,
-    FormError,
+    dispatch: wrappedDispatch,
     state,
     isPending,
     formRef,
-    onFormSuccess,
-    onFormError,
-    onFormSubmit,
+    onSuccess,
+    onError,
+    onSubmit,
   };
 };

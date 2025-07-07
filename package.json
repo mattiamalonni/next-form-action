@@ -1,6 +1,6 @@
 {
   "name": "next-form-action",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "description": "A TypeScript library for handling form actions in Next.js applications",
   "type": "module",
   "main": "dist/index.cjs",
