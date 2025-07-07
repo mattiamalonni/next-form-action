@@ -1,6 +1,6 @@
 'use client';
 
-import { useAction } from '../src/use-action';
+import { useAction } from '../src/hook';
 import { testAction } from './test.action';
 
 export const TestForm = () => {

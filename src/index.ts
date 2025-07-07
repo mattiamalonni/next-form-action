@@ -6,4 +6,4 @@ export { ActionResponse, ActionError, ActionSuccess } from '@/classes';
 export { createAction, createActionState, error, success } from '@/actions';
 
 // Re-export the form hooks
-export { useAction } from '@/use-action';
+export { useAction } from '@/hook';
