@@ -12,13 +12,9 @@
   ],
   "scripts": {
     "build": "unbuild",
-    "type-check": "tsc --noEmit",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
-    "format": "prettier --write ",
-    "format:check": "prettier --check ",
-    "check": "pnpm run type-check && pnpm run lint && pnpm run format:check",
-    "prepublishOnly": "pnpm run check && pnpm run build"
+    "lint": "eslint",
+    "format": "prettier --write .",
+    "prepublishOnly": "pnpm run lint && pnpm run format && pnpm run build"
   },
   "keywords": [
     "nextjs",
