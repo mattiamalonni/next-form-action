@@ -16,4 +16,4 @@ export type ActionState = ActionErrorState | ActionSuccessState;
 
 export type Action<T = unknown> = (data: T) => Promise<ActionState>;
 
-export type ActionParams = Omit<ActionState, 'message' | 'success'>;
+export type ActionParams = Omit<ActionState, "message" | "success">;

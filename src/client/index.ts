@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Action, ActionErrorState, ActionState, ActionSuccessState } from '@/types';
-import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { Action, ActionErrorState, ActionState, ActionSuccessState } from "@/types";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
 export interface UseActionOptions {
   onSuccess?: (state: ActionState & { success: true }) => void | Promise<void>;

@@ -1,4 +1,4 @@
-import { ActionErrorState, ActionParams, ActionState, ActionSuccessState } from '@/types';
+import { ActionErrorState, ActionParams, ActionState, ActionSuccessState } from "@/types";
 
 /**
  * Base class for action responses
@@ -35,20 +35,20 @@ export class ActionSuccess extends ActionResponse {
  * These errors have a digest property that starts with 'NEXT_'
  */
 function isNextSystemError(error: unknown): error is Error & { digest: string } {
-  return error instanceof Error && 'digest' in error && typeof error.digest === 'string' && error.digest.startsWith('NEXT_');
+  return error instanceof Error && "digest" in error && typeof error.digest === "string" && error.digest.startsWith("NEXT_");
 }
 
 /**
  * Throw to return an error state from a server action
  */
-export function error(message: ActionState['message'], params: ActionParams = {}): never {
+export function error(message: ActionState["message"], params: ActionParams = {}): never {
   throw new ActionError({ success: false, message, ...params });
 }
 
 /**
  * Throw to return a success state from a server action
  */
-export function success(message: ActionState['message'], params: ActionParams = {}): never {
+export function success(message: ActionState["message"], params: ActionParams = {}): never {
   throw new ActionSuccess({ success: true, message, ...params });
 }
 
@@ -69,9 +69,12 @@ export function createAction<T = unknown>(handler: (data: T) => Promise<ActionSt
         throw caughtError;
       }
 
-      console.error(`Error in action${context ? ` "${context}"` : ''}:`, caughtError);
+      console.error(`Error in action${context ? ` "${context}"` : ""}:`, caughtError);
 
-      const message = caughtError instanceof Error && caughtError.message ? caughtError.message : 'An unexpected error occurred. Please try again.';
+      const message =
+        caughtError instanceof Error && caughtError.message
+          ? caughtError.message
+          : "An unexpected error occurred. Please try again.";
 
       return new ActionError({ success: false, message }).state;
     }

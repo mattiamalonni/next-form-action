@@ -29,7 +29,7 @@ pnpm add next-form-action
 ### 1. Create a Server Action
 
 ```typescript
-import { createAction, error, success } from 'next-form-action';
+import { createAction, error, success } from "next-form-action";
 
 interface LoginData {
   email: string;
@@ -37,38 +37,38 @@ interface LoginData {
 }
 
 export const loginAction = createAction<LoginData>(
-  async data => {
+  async (data) => {
     // Validate input
     if (!data.email || !data.password) {
-      error('Email and password are required');
+      error("Email and password are required");
     }
 
     // Authenticate user
     const user = await authenticateUser(data.email, data.password);
 
     if (!user) {
-      error('Invalid email or password.');
+      error("Invalid email or password.");
     }
 
     if (!user.isActive) {
-      error('Please check your inbox for activation email.');
+      error("Please check your inbox for activation email.");
     }
 
     // Success with redirect
-    success('Welcome back!', { redirect: '/dashboard' });
+    success("Welcome back!", { redirect: "/dashboard" });
   },
-  'loginAction', // context for logging
+  "loginAction", // context for logging
 );
 ```
 
 ### 2. Use in Your Component
 
 ```tsx
-'use client';
+"use client";
 
-import { FormEvent } from 'react';
-import { useAction } from 'next-form-action';
-import { loginAction } from './actions';
+import { FormEvent } from "react";
+import { useAction } from "next-form-action";
+import { loginAction } from "./actions";
 
 interface LoginData {
   email: string;
@@ -77,11 +77,11 @@ interface LoginData {
 
 export default function LoginForm() {
   const { dispatch, state, isPending } = useAction<LoginData>(loginAction, {
-    onSuccess: result => {
-      console.log('Logged in:', result.message);
+    onSuccess: (result) => {
+      console.log("Logged in:", result.message);
     },
-    onError: result => {
-      console.log('Login failed:', result.message);
+    onError: (result) => {
+      console.log("Login failed:", result.message);
     },
   });
 
@@ -89,8 +89,8 @@ export default function LoginForm() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const data: LoginData = {
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
     };
     dispatch(data);
   };
@@ -100,10 +100,10 @@ export default function LoginForm() {
       <input type="email" name="email" placeholder="Email" required />
       <input type="password" name="password" placeholder="Password" required />
 
-      {state?.message && <div className={state.success ? 'success' : 'error'}>{state.message}</div>}
+      {state?.message && <div className={state.success ? "success" : "error"}>{state.message}</div>}
 
       <button type="submit" disabled={isPending}>
-        {isPending ? 'Signing in...' : 'Sign In'}
+        {isPending ? "Signing in..." : "Sign In"}
       </button>
     </form>
   );
@@ -121,9 +121,9 @@ export const myAction = createAction<MyDataType>(
   async (data: MyDataType) => {
     // Your action logic here
     // Throw error() or success() to return state
-    success('Done!');
+    success("Done!");
   },
-  'myActionName', // Optional context for logging
+  "myActionName", // Optional context for logging
 );
 ```
 
@@ -138,10 +138,10 @@ Hook to use a server action in your component.
 
 ```typescript
 const { dispatch, state, isPending } = useAction<MyDataType>(myAction, {
-  onSuccess: state => {
+  onSuccess: (state) => {
     /* called when success() is thrown */
   },
-  onError: state => {
+  onError: (state) => {
     /* called when error() is thrown */
   },
 });
@@ -161,8 +161,8 @@ dispatch(myData);
 Throw in your action to return success state.
 
 ```typescript
-success('Operation completed!', {
-  redirect: '/next-page',
+success("Operation completed!", {
+  redirect: "/next-page",
   refresh: true,
 });
 ```
@@ -172,8 +172,8 @@ success('Operation completed!', {
 Throw in your action to return error state.
 
 ```typescript
-error('Something went wrong', {
-  redirect: '/error',
+error("Something went wrong", {
+  redirect: "/error",
 });
 ```
 
@@ -192,10 +192,10 @@ You can safely narrow the type:
 ```typescript
 if (state?.success) {
   // state is success state here
-  console.log('Success:', state.message);
+  console.log("Success:", state.message);
 } else if (state?.success === false) {
   // state is error state here
-  console.log('Error:', state.message);
+  console.log("Error:", state.message);
 }
 ```
 
