@@ -1,8 +1,8 @@
 // Core types
 export type { Action, ActionState } from '@/types';
 
-// Functions
-export { createAction, error, success } from '@/server';
+// Server-side functions and classes
+export { ActionError, ActionResponse, ActionSuccess, createAction, error, success } from '@/server';
 
-// Hook
+// Client-side hook
 export { useAction, type UseActionOptions } from '@/client';

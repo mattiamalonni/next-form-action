@@ -3,7 +3,7 @@ import { ActionErrorState, ActionParams, ActionState, ActionSuccessState } from 
 /**
  * Base class for action responses
  */
-class ActionResponse extends Error {
+export class ActionResponse extends Error {
   public readonly state: ActionErrorState | ActionSuccessState;
 
   constructor(state: ActionErrorState | ActionSuccessState) {
@@ -15,7 +15,7 @@ class ActionResponse extends Error {
 /**
  * Error response - thrown to return error state
  */
-class ActionError extends ActionResponse {
+export class ActionError extends ActionResponse {
   constructor(state: ActionErrorState) {
     super(state);
   }
@@ -24,7 +24,7 @@ class ActionError extends ActionResponse {
 /**
  * Success response - thrown to return success state
  */
-class ActionSuccess extends ActionResponse {
+export class ActionSuccess extends ActionResponse {
   constructor(state: ActionSuccessState) {
     super(state);
   }
