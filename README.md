@@ -1,20 +1,18 @@
 # next-form-action
 
-A TypeScript library for handling form actions in Next.js applications with enhanced developer experience and type safety.
+A TypeScript library for handling server actions in Next.js with type-safe error handling and callbacks.
 
 ## Features
 
-- 🚀 **Type-safe form actions** with full TypeScript support
-- 🎯 **Built-in state management** for form submissions
+- 🚀 **Type-safe server actions** with full TypeScript support
+- 🎯 **Generic data handling** - work with any data type, not just FormData
 - 🔄 **Automatic redirects and refresh** handling
-- 🎨 **React hooks** for seamless integration
-- 📝 **Form validation** and error handling
-- ⚡ **Next.js App Router** optimized
+- 🎨 **React hooks** for seamless integration with `useTransition`
+- 🛡️ **Discriminated union types** for better type safety
+- ⚡ **Next.js 16+ optimized** with proper error digest handling
 - 🌐 **Dual module support** (ESM + CommonJS)
-- 🔧 **Lifecycle callbacks** for submit, success, and error events
-- 🛡️ **Next.js error handling** for redirects and system errors
+- 🔧 **Lifecycle callbacks** for success and error events
 - ✨ **Global error/success functions** for clean action code
-- 🔗 **Compatible with Zod** and other validation libraries
 
 ## Installation
 
@@ -28,40 +26,39 @@ pnpm add next-form-action
 
 ## Quick Start
 
-### 1. Create a Form Action
+### 1. Create a Server Action
 
 ```typescript
 import { createAction, error, success } from 'next-form-action';
-import { z } from 'zod';
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
+interface LoginData {
+  email: string;
+  password: string;
+}
 
-export const loginAction = createAction('login', async (state, formData) => {
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  };
+export const loginAction = createAction<LoginData>(
+  async data => {
+    // Validate input
+    if (!data.email || !data.password) {
+      error('Email and password are required');
+    }
 
-  const result = loginSchema.safeParse(data);
+    // Authenticate user
+    const user = await authenticateUser(data.email, data.password);
 
-  if (!result.success) {
-    error('Please fix the errors below', { formErrors: result.error.flatten().fieldErrors });
-  }
+    if (!user) {
+      error('Invalid email or password.');
+    }
 
-  const { email, password } = result.data;
-  const user = await authenticateUser(email, password);
+    if (!user.isActive) {
+      error('Please check your inbox for activation email.');
+    }
 
-  if (!user) {
-    error('Invalid email or password.');
-  } else if (!user.isActive) {
-    error('Please check your inbox for activation email.', { refresh: true });
-  }
-
-  success('Welcome back!', { redirect: '/dashboard' });
-});
+    // Success with redirect
+    success('Welcome back!', { redirect: '/dashboard' });
+  },
+  'loginAction', // context for logging
+);
 ```
 
 ### 2. Use in Your Component
@@ -69,36 +66,41 @@ export const loginAction = createAction('login', async (state, formData) => {
 ```tsx
 'use client';
 
+import { FormEvent } from 'react';
 import { useAction } from 'next-form-action';
 import { loginAction } from './actions';
 
+interface LoginData {
+  email: string;
+  password: string;
+}
+
 export default function LoginForm() {
-  const { state, isPending, dispatch, onSubmit, onSuccess, onError } = useAction(loginAction);
-
-  // Called when form is submitted (before server action runs)
-  onSubmit(formData => {
-    console.log('Login attempt for:', formData.get('email'));
+  const { dispatch, state, isPending } = useAction<LoginData>(loginAction, {
+    onSuccess: result => {
+      console.log('Logged in:', result.message);
+    },
+    onError: result => {
+      console.log('Login failed:', result.message);
+    },
   });
 
-  // Called when action succeeds
-  onSuccess(state => {
-    console.log('Success:', state.message);
-  });
-
-  // Called when action fails
-  onError(state => {
-    console.log('Error:', state.message);
-  });
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data: LoginData = {
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+    };
+    dispatch(data);
+  };
 
   return (
-    <form action={dispatch}>
-      <input name="email" type="email" placeholder="Email" required />
-      {state.formErrors?.email && <span className="error">{state.formErrors.email[0]}</span>}
+    <form onSubmit={handleSubmit}>
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
 
-      <input name="password" type="password" placeholder="Password" required />
-      {state.formErrors?.password && <span className="error">{state.formErrors.password[0]}</span>}
-
-      {state.message && <div>{state.message}</div>}
+      {state?.message && <div className={state.success ? 'success' : 'error'}>{state.message}</div>}
 
       <button type="submit" disabled={isPending}>
         {isPending ? 'Signing in...' : 'Sign In'}
@@ -108,9 +110,98 @@ export default function LoginForm() {
 }
 ```
 
+## API Reference
+
+### `createAction<T>(handler, context?)`
+
+Creates a type-safe server action wrapper.
+
+```typescript
+export const myAction = createAction<MyDataType>(
+  async (data: MyDataType) => {
+    // Your action logic here
+    // Throw error() or success() to return state
+    success('Done!');
+  },
+  'myActionName', // Optional context for logging
+);
+```
+
+**Parameters:**
+
+- `handler` - Async function that receives typed data and returns/throws ActionState
+- `context` - Optional string for error logging context
+
+### `useAction<T>(action, options?)`
+
+Hook to use a server action in your component.
+
+```typescript
+const { dispatch, state, isPending } = useAction<MyDataType>(myAction, {
+  onSuccess: state => {
+    /* called when success() is thrown */
+  },
+  onError: state => {
+    /* called when error() is thrown */
+  },
+});
+
+// Call with data
+dispatch(myData);
+```
+
+**Returns:**
+
+- `dispatch` - Function to call the action with data
+- `state` - Current ActionState (undefined until first call)
+- `isPending` - Boolean indicating if action is running
+
+### `success(message?, options?)`
+
+Throw in your action to return success state.
+
+```typescript
+success('Operation completed!', {
+  redirect: '/next-page',
+  refresh: true,
+});
+```
+
+### `error(message?, options?)`
+
+Throw in your action to return error state.
+
+```typescript
+error('Something went wrong', {
+  redirect: '/error',
+});
+```
+
+## ActionState Type
+
+The return type of actions is a **discriminated union**:
+
+```typescript
+type ActionState =
+  | { success: true; message?: string; redirect?: string; refresh?: boolean }
+  | { success: false; message?: string; redirect?: string; refresh?: boolean };
+```
+
+You can safely narrow the type:
+
+```typescript
+if (state?.success) {
+  // state is success state here
+  console.log('Success:', state.message);
+} else if (state?.success === false) {
+  // state is error state here
+  console.log('Error:', state.message);
+}
+```
+
 ## Requirements
 
-- Next.js 15+ (App Router)
+- Next.js 16+ (App Router)
 - React 19+
 - TypeScript 5+
 

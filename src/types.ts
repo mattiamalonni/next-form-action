@@ -1,16 +1,19 @@
-export type ActionState = {
-  payload?: FormData;
-
-  success?: boolean;
+export type ActionErrorState = {
+  success: false;
   message?: string;
-
-  formErrors?: Record<string, string[]>;
-  extra?: Record<string, unknown>;
-
   redirect?: string;
   refresh?: boolean;
 };
 
-export type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
+export type ActionSuccessState = {
+  success: true;
+  message?: string;
+  redirect?: string;
+  refresh?: boolean;
+};
+
+export type ActionState = ActionErrorState | ActionSuccessState;
+
+export type Action<T = unknown> = (data: T) => Promise<ActionState>;
 
 export type ActionParams = Omit<ActionState, 'message' | 'success'>;

@@ -1,5 +1,11 @@
 import { createAction, success } from '../src/actions';
-export const testAction = createAction('test', async (_, formData) => {
-  console.log('Test action executed with data:', formData);
+
+interface TestData {
+  name: string;
+  email: string;
+}
+
+export const testAction = createAction<TestData>(async data => {
+  console.log('Test action executed with data:', data);
   success('Test action completed successfully!');
-});
+}, 'testAction');
