@@ -1,6 +1,6 @@
 'use client';
 
-import { Action, ActionState } from '@/types';
+import { Action, ActionErrorState, ActionState, ActionSuccessState } from '@/types';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
@@ -24,9 +24,9 @@ export function useAction<T = unknown>(action: Action<T>, options: UseActionOpti
 
       // Execute callbacks based on state
       if (result.success === true && options.onSuccess) {
-        await options.onSuccess(result as ActionState & { success: true });
+        await options.onSuccess(result as ActionSuccessState);
       } else if (result.success === false && options.onError) {
-        await options.onError(result as ActionState & { success: false });
+        await options.onError(result as ActionErrorState);
       }
 
       // Handle implicit actions

@@ -3,18 +3,30 @@
   "version": "5.0.0",
   "description": "A TypeScript library for handling server actions in Next.js with type-safe error handling and callbacks",
   "type": "module",
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "default": "./dist/client/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "default": "./dist/server/index.js"
+    }
+  },
   "files": [
-    "dist",
-    "README.md"
+    "dist"
   ],
   "scripts": {
-    "build": "unbuild",
+    "build": "tsc -p tsconfig.json",
     "lint": "eslint",
     "format": "prettier --write .",
-    "prebuild": "pnpm run lint && pnpm run format"
+    "prebuild": "pnpm run format && pnpm run lint"
   },
   "keywords": [
     "nextjs",
@@ -53,7 +65,6 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "prettier": "^3.5.3",
-    "typescript": "^5.8.3",
-    "unbuild": "^3.5.0"
+    "typescript": "^5.8.3"
   }
 }
